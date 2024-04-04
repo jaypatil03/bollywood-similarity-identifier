@@ -1,6 +1,6 @@
+git+https://github.com/yourusername/keras-vggface.git#egg=keras_vggface
 tensorflow
 keras
-keras_vggface
 scikit-learn
 pillow
 opencv-python
