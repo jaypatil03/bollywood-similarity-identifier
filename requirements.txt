@@ -1,6 +1,6 @@
 keras_vggface
 scikit-learn
-PIL
+pillow
 os
 opencv-python
 mtcnn
