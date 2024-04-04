@@ -1,5 +1,5 @@
-tensorflow==2.3.0 
-keras_vggface==0.6  
+tensorflow>=2.5.0
+keras_vggface
 scikit-learn
 pillow
 opencv-python
