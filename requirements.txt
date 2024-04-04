@@ -1,4 +1,5 @@
 git+https://github.com/jaypatil03/keras-vggface.git#egg=keras_vggface
+opencv-python-headless
 tensorflow==2.12.0rc0
 keras
 scikit-learn
