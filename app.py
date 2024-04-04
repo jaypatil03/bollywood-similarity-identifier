@@ -55,10 +55,12 @@ def extract_features(img_path, model, detector):
 
 
 def recommend(feature_list, features):
-    if features is not None:
-        similarity = [cosine_similarity(features.reshape(1, -1), feat.reshape(1, -1))[0][0] for feat in feature_list]
-        index_pos = sorted(list(enumerate(similarity)), reverse=True, key=lambda x: x[1])[0][0]
-        return index_pos
+    similarity = []
+    for i in range(len(feature_list)):
+        similarity.append(cosine_similarity(features.reshape(1,-1), feature_list[i].reshape(1,-1))[0][0])
+
+        index_pos = sorted(list(enumerate(similarity)),reverse=True, key=lambda x: x[1])[0][0]
+    return index_pos
 
 uploaded_image = st.file_uploader("Choose an image...")
 
@@ -70,7 +72,7 @@ if uploaded_image is not None:
         features = extract_features(os.path.join('uploads', uploaded_image.name), model, detector)
         if features is not None:
             index_pos = recommend(feature_list, features)
-            predicted_actor = " ".join(filenames[index_pos].split('/')[-1].split('_'))  # Assuming filenames now contain URLs
+            predicted_actor = " ".join(filenames[index_pos].split('/')[1].split('_'))  # Assuming filenames now contain URLs
 
             # Display uploaded image
             col1, col2 = st.columns(2)
