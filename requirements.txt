@@ -1,7 +1,6 @@
-tensorflow==2.12.0rc0
-keras==2.4.3
-keras-vggface==0.6
-keras_applications==1.0.8
+tensorflow
+keras
+keras_vggface
 scikit-learn
 pillow
 opencv-python
