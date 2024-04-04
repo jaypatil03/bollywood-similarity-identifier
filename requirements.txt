@@ -1,5 +1,4 @@
 keras_vggface
-pickle
 scikit-learn
 PIL
 os
