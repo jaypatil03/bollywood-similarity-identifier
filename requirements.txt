@@ -1,5 +1,5 @@
 git+https://github.com/jaypatil03/keras-vggface.git#egg=keras_vggface
-tensorflow
+tensorflow==2.12.0rc0
 keras
 scikit-learn
 pillow
