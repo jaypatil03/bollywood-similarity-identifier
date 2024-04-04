@@ -3,53 +3,64 @@ from keras_vggface.utils import preprocess_input
 import pickle
 from sklearn.metrics.pairwise import cosine_similarity
 import streamlit as st
-from PIL import Image
+from PIL import Image, ImageOps
 import os
-import cv2
 from mtcnn import MTCNN
 import numpy as np
 
+# Initialize MTCNN detector and VGGFace model
 detector = MTCNN()
 model = VGGFace(model='resnet50', include_top=False, input_shape=(224, 224, 3), pooling='avg')
-feature_list = pickle.load(open('embedding.pkl', 'rb'))
-filenames= pickle.load(open('filenames.pkl', 'rb'))
 
+# Load precomputed embeddings and filenames
+feature_list = pickle.load(open('embedding.pkl', 'rb'))
+filenames = pickle.load(open('filenames.pkl', 'rb'))
+
+# Streamlit app title
 st.title('Which Bollywood Celebrity are you?')
 
 def save_uploaded_image(uploaded_image):
     try:
-        with open(os.path.join('uploads', uploaded_image.name),'wb') as f:
+        with open(os.path.join('uploads', uploaded_image.name), 'wb') as f:
             f.write(uploaded_image.getbuffer())
         return True
-    except:
+    except Exception as e:
+        st.error(f"Error saving image: {e}")
         return False
-    
+
 def extract_features(img_path, model, detector):
-    img = cv2.imread(img_path)
-    results = detector.detect_faces(img)
+    # Load the image with PIL
+    img = Image.open(img_path).convert('RGB')
+    img_array = np.asarray(img)
 
-    x,y,width,height = results[0]['box']
+    # Detect faces
+    results = detector.detect_faces(img_array)
+    if results:
+        x, y, width, height = results[0]['box']
+        face = img_array[y:y+height, x:x+width]
 
-    face = img[y:y+height, x:x+width]
+        # Convert the face to PIL Image and resize
+        image = Image.fromarray(face)
+        image = ImageOps.fit(image, (224, 224))
 
-    #Extract the features
-    image = Image.fromarray(face)
-    image = image.resize((224,224))
+        # Preprocess the face for the model
+        face_array = np.asarray(image, dtype='float32')
+        expanded_img = np.expand_dims(face_array, axis=0)
+        preprocessed_img = preprocess_input(expanded_img)
 
-    face_array = np.asarray(image)
-    face_array = face_array.astype('float32')
-    expanded_img = np.expand_dims(face_array, axis=0)
-    preprocessed_img = preprocess_input(expanded_img)
-    result = model.predict(preprocessed_img).flatten()
-    return result
+        # Predict features
+        result = model.predict(preprocessed_img).flatten()
+        return result
+    else:
+        st.warning("No face detected in the image.")
+        return None
+
 
 def recommend(feature_list, features):
-    similarity = []
-    for i in range(len(feature_list)):
-        similarity.append(cosine_similarity(features.reshape(1,-1), feature_list[i].reshape(1,-1))[0][0])
-
-        index_pos = sorted(list(enumerate(similarity)),reverse=True, key=lambda x: x[1])[0][0]
-    return index_pos
+    if features is not None:
+        similarity = [cosine_similarity(features.reshape(1, -1), feat.reshape(1, -1))[0][0] for feat in feature_list]
+        index_pos = sorted(list(enumerate(similarity)), reverse=True, key=lambda x: x[1])[0][0]
+        return index_pos
 
 uploaded_image = st.file_uploader("Choose an image...")
 
@@ -59,14 +70,16 @@ if uploaded_image is not None:
         st.image(display_image, caption='Uploaded Image.', use_column_width=True)
 
         features = extract_features(os.path.join('uploads', uploaded_image.name), model, detector)
-        index_pos = recommend(feature_list, features)
-        predicted_actor = " ".join(filenames[index_pos].split('\\')[1].split('_'))
+        if features is not None:
+            index_pos = recommend(feature_list, features)
+            predicted_actor = " ".join(filenames[index_pos].split('/')[-1].split('_'))
 
-        col1,col2 = st.columns(2)
+            col1, col2 = st.columns(2)
 
-        with col1:
-            st.header('Uploaded Image')
-            st.image(display_image, caption='Uploaded Image.', use_column_width=True)
-        with col2:
-            st.header("Looks like " + predicted_actor + " to me!")
-            st.image(filenames[index_pos], caption='Recommended Image.', use_column_width=True)
+            with col1:
+                st.header('Uploaded Image')
+                st.image(display_image, caption='Uploaded Image.', use_column_width=True)
+            with col2:
+                st.header(f"Looks like {predicted_actor} to me!")
+                actor_image = Image.open(filenames[index_pos])
+                st.image(actor_image, caption='Similar Celebrity.', use_column_width=True)
