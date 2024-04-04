@@ -6,3 +6,4 @@ scikit-learn
 pillow
 mtcnn
 numpy
+boto3
