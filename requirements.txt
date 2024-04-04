@@ -1,4 +1,4 @@
-git+https://github.com/yourusername/keras-vggface.git#egg=keras_vggface
+git+https://github.com/jaypatil03/keras-vggface.git#egg=keras_vggface
 tensorflow
 keras
 scikit-learn
