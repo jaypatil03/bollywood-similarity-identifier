@@ -31,26 +31,22 @@ def save_uploaded_image(uploaded_image):
         return False
 
 def extract_features(img_path, model, detector):
-    # Load the image with PIL
-    img = Image.open(img_path).convert('RGB')
-    img_array = np.asarray(img)
+    # Load the image with OpenCV
+    img = cv2.imread(img_path)
 
     # Detect faces
-    results = detector.detect_faces(img_array)
+    results = detector.detect_faces(img)
     if results:
         x, y, width, height = results[0]['box']
-        face = img_array[y:y+height, x:x+width]
+        face = img[y:y+height, x:x+width]
 
-        # Convert the face to PIL Image and resize
         image = Image.fromarray(face)
-        image = ImageOps.fit(image, (224, 224))
-
-        # Preprocess the face for the model
-        face_array = np.asarray(image, dtype='float32')
+        image = image.resize((224,224))
+    
+        face_array = np.asarray(image)
+        face_array = face_array.astype('float32')
         expanded_img = np.expand_dims(face_array, axis=0)
         preprocessed_img = preprocess_input(expanded_img)
-
-        # Predict features
         result = model.predict(preprocessed_img).flatten()
         return result
     else:
