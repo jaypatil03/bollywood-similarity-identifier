@@ -1,7 +1,6 @@
 keras_vggface
 scikit-learn
 pillow
-os
 opencv-python
 mtcnn
 numpy
