@@ -3,6 +3,5 @@ tensorflow==2.12.0rc0
 keras
 scikit-learn
 pillow
-opencv-python
 mtcnn
 numpy
